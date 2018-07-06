@@ -1,0 +1,1006 @@
+<!DOCTYPE HTML>
+<html>
+  <head>
+    <style>
+      body {
+		font-size: 100%
+        margin: 0px;
+        padding: 0px;
+      }
+	  h1 {
+		text-align: center;
+	  }
+	  *{
+		  padding: 0;
+		  margin: 0;
+		  font-family: 'Lato', sans-serif;
+		  box-sizing: border-box;
+
+		}
+		.float-right{
+		  float: right;
+		}
+		.fa{
+		 font-size: .8em;
+		  line-height: 22px !important;
+		}
+		dropdown{
+		   display: inline-block;
+		   margin: 20px 50px; 
+		}
+		dropdown label, dropdown ul li{
+		  display: block;
+		  width: 500px;
+		  background: #ECF0F0;
+		  padding: 15px 20px;
+		}
+		dropdown label:hover, dropdown ul li:hover{
+		  background: #1ABC9C;
+		  color: white;
+		  cursor: pointer;/*When mouse on*/
+		}
+		dropdown li:active{
+			background: #FF0000;
+			color: white;
+		    cursor: pointer;
+		}
+		dropdown label{
+		  color: #1ABC9C;
+		  border-left: 4px solid #1ABC9C;
+		  margin:1 0;
+		  border: 1px solid white;
+		  position: relative;
+		  z-index: 2;
+		}
+		dropdown input{
+		  display: none;
+		}
+		dropdown input ~ ul{
+		  position: relative;
+		  visibility: hidden;
+		  opacity: 0;
+		  top: -20px;
+		  z-index: 1;
+		}
+		dropdown input:checked + label{
+		  background: #FF0000;
+		  color: white;
+		  border-left: 4px solid #FF0000;
+		   
+		}
+
+		dropdown input:checked ~ ul{
+		  visibility: visible;
+		  opacity: 1;
+		  top: 0;
+		}
+
+		$colors: #E74C3C, #0072B5, #2C3E50;
+
+		@for $i from 1 through length($colors) {
+		  dropdown ul li:nth-child(#{$i}) {
+		    border-left: 4px solid nth($colors, $i);
+		    .fa{
+		      color: nth($colors, $i);
+		    }
+		    &:hover {
+		        background: nth($colors, $i);
+		        color: white;
+		      .fa{
+		        color: white; 
+		      }
+		    }
+		  }
+		}
+
+		.animate{
+		  -webkit-transition: all .3s;
+		  -moz-transition: all .3s;
+		  -ms-transition: all .3s;
+		  -ms-transition: all .3s;
+		  transition: all .3s;  
+		  backface-visibility:hidden;
+		  -webkit-backface-visibility:hidden; /* Chrome and Safari */
+		  -moz-backface-visibility:hidden; /* Firefox */
+		  -ms-backface-visibility:hidden; /* Internet Explorer */
+		}
+    </style>
+
+  </head>
+  <body>
+	<h1 style="position:relative; left: -250px">PONG</h1>
+	<p id="left_s" style="position:absolute; left:20px; z-index: 1; ">Waiting for data</p> 
+	<p id="right_s" style="position:absolute; left:1040px; z-index: 1;"></p>
+	<p id="hit" style="position:absolute; left:350px; z-index: 1; font-size:50px;"> </p> 
+    <canvas id="myCanvas" width="1092" height="550" style="border:3px solid #000000;position:relative; top:0px; left:10px;"></canvas>
+	
+
+		<dropdown>
+		<input id="toggle1" type="checkbox" unchecked>
+		<label for="toggle1" class="animate">MENU ↓<i class="fa fa-bars float-right"></i></label>
+		  <ul class="animate">
+		    <li class="animate" onclick="add_ball()">Add Ball<i class="fa fa-code float-right"></i></li>
+		    <input id="Game_mode_O" type="checkbox" unchecked>
+			<label for="Game_mode_O" class="animate" style="background: #3366cc" onclick="Original()" > Original PONG Mode</label>
+			<ul>
+				<li class="animate">The original PONG! <br> The one get first 11 win.<i class="fa fa-code float-right"></i></li>
+			</ul>
+
+			<input id="Game_mode_E" type="checkbox" unchecked>
+			<label for="Game_mode_E" class="animate" style="background: #3366cc" onclick="Excited()" > Excited! Mode</label>
+			<ul>
+				<li class="animate">Helps Kai to retire! <br> Get 1,000,000$ before 25.<i class="fa fa-code float-right"></i></li>
+			</ul>
+
+		    <input id="T2" type="checkbox" unchecked>
+		    <label for="T2" class="animate">Options<i class="fa fa-bars float-right"></i></label>
+		    	<ul>
+			    <input id="Die_after_hit" type="checkbox" unchecked>
+			    <label for="Die_after_hit" class="animate" style="background: #3366cc"> Balls die after hit the walls</label>
+			    <input id="prop" type="checkbox" unchecked>
+			    <label for="prop" class="animate" style="background: #3366cc"> Special Props</label>
+			    <input id="effect_low" type="checkbox" unchecked>
+			    <label for="effect_low" class="animate" style="background: #3366cc">Low Effect</label>
+			    <input id="AI_R" type="checkbox" unchecked>
+			    <label for="AI_R" class="animate" onclick="AI_R_Main ^= true" style="background: #3366cc">Right AI</label>
+			    <input id="AI_L" type="checkbox" unchecked>
+			    <label for="AI_L" class="animate"  onclick="AI_L_Main ^= true" style="background: #3366cc">Left AI</label>
+			    </ul></label>
+		  </ul>
+		</dropdown>
+		<p id="prop_hit" style="color:red; position:absolute; left: 1000px; ">stand by.....</p>
+
+		<form name="input">
+		
+		<!--input type="button" value="change!" onclick="change()"-->
+		
+		ball's location:</br> 
+		x:<input type="text" id="n_ball_x">
+		y:<input type="text" id="n_ball_y"></br>  	 	 	 	
+		speed:</br>
+		x:<input type="text" id="n_ball_spx">
+		y:<input type="text" id="n_ball_spy"></br>
+		mass:<input type="text" id="n_ball_mass"></br>
+		color(#000000): <input type="text" id="User_color"></br>
+		<input type="button" value="+1s!" onclick="add_ball()"></br>
+		<!-- special prop<input id="prop" type="checkbox" value="true"></br> -->
+		<!-- Balls die after hit the walls?<input id="Die_after_hit" type="checkbox" value="true"></br>
+		
+		low effect<input id="effect_low" type="checkbox" value="true">(check if more than 10 balls)</br> -->
+	    </form>
+	
+	
+	<script>
+
+
+		var canvas = document.getElementById('myCanvas');
+
+        window.requestAnimFrame = (function(callback) {
+			return window.requestAnimationFrame || window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame || window.oRequestAnimationFrame || window.msRequestAnimationFrame ||
+			function(callback) {
+			window.setTimeout(callback, 1000 / 60);
+			};
+		})();
+
+     var date = new Date();
+     var time = date.getTime();
+     var top_score={
+     	L:9007199254740991,
+     	R:9007199254740991,
+     };
+     var color = document.input.User_color.value;
+  //score
+	 var L_s=0;
+	 var R_s=0;
+  //declears
+	 var balls=[];
+	 var fireworks=[];
+	 var finish
+	 var AI_L_Main=false;
+	 var AI_R_Main=false;
+	
+	 var ice_boom_hit
+	 var ice_alpha=1; 
+	 //AI
+	 var hit_point_L=[];
+	 var hit_point_R=[];
+	 var toMove=0;
+	 var AI_move_L_enable=false;
+	 var AI_move_R_enable=false;
+	//settings
+	 
+	  function Original(){
+	  		top_score.L=11;
+	  		top_score.R=11;
+	  		document.getElementById("Die_after_hit").checked ^= true;
+	  		document.getElementById("prop").checked=false;
+	  		document.getElementById("effect_low").checked=false;
+	  }
+
+	  function Excited(){
+	  	top_score.R=25;
+	  	top_score.L=1000000;
+	  	document.getElementById("Die_after_hit").checked ^= true;
+	  	document.getElementById("prop").checked ^= true;
+	  	for(let i=0;i<10;i++)
+	  		icon[i].YN=1;//disable
+	  	
+
+	  }
+	  Array.prototype.AI_insertion_sort = function() {
+		   var i,j;
+		  /* if(!this) return;
+		   for(var id in this){
+		   	if(this[id].time < this[0].time) this[0] = this[id];
+		   }
+		   return this;*/
+
+		   for(i = 1;i < this.length; i++){
+		    if(!this[i]) continue;
+		   for(j = 0;j<i;j++){
+		   	if(!this[j]) continue;
+		       if(this[j].time>this[i].time){
+		         this.splice(j,0,this[i]);
+		         this.splice(i+1,1);
+		       }
+		    }
+		  }
+		  return this; 
+		};
+
+
+	  //update
+    function updatePos(timeDiff,ball){
+        
+		
+		ball.x+=0.1*ball.vx*timeDiff;
+        ball.y+=0.1*ball.vy*timeDiff;
+		//collide wall normal
+		if(document.getElementById("Game_mode_E").checked==false){
+			if(ball.x-ball.r<=0){
+				if(document.getElementById("Die_after_hit").checked){
+					balls.splice(balls.indexOf(ball),1);
+				}	
+				
+				wall_collide(ball,"x",timeDiff);
+				AI_target(balls,"R");	
+				R_s++;
+				document.getElementById("right_s").innerHTML = "Right:"+R_s;
+				if(R_s>=top_score.R){
+					victor(-1);
+					top_score=-1;
+				}
+			}
+			else if(ball.x+ball.r>=canvas.width){
+				if(document.getElementById("Die_after_hit").checked)
+					balls.splice(balls.indexOf(ball),1);
+				wall_collide(ball,"x",timeDiff);
+				AI_target(balls,"R");	
+				L_s++;
+				document.getElementById("left_s").innerHTML = "Left:"+L_s;
+				if(L_s>=top_score.L){
+					victor(1);
+					top_score=-1;
+				}
+				
+			}
+			else if (ball.y-ball.r<=0||ball.y+ball.r>=canvas.height){
+				wall_collide(ball,"y",timeDiff);
+			}
+		}else{ //collide wall Excited
+			if(ball.x-ball.r<=0){	
+				balls.splice(balls.indexOf(ball),1);
+				R_s++;
+			}
+			else if(ball.x+ball.r>=canvas.width){
+				balls.splice(balls.indexOf(ball),1);
+				L_s+=40000;
+			}
+			else if (ball.y-ball.r<=0||ball.y+ball.r>=canvas.height){
+					wall_collide(ball,"y",timeDiff);
+			}
+			document.getElementById("hit").style.color = getRandomColor();
+			document.getElementById("right_s").innerHTML = "Age:"+R_s.toFixed(1);
+			document.getElementById("left_s").innerHTML = "Money:"+L_s.toFixed(2);
+			if(L_s>=top_score.L){
+					victor(1);
+					top_score=9999999;}
+			if(R_s>=top_score.R){
+					victor(-1);
+					top_score=9999999;
+				}
+		}
+		//collide ball
+		balls.forEach(function(elements,index){
+			if(elements==ball)
+				return;
+			test_ball_collide(ball,elements);
+		})
+		/* for(let i=0;i<ball.length-1;i++){
+			if(ball[i].life>0)
+			for(let j=i+1;j<ball.length;j++){
+				if(ball[j].life>0)
+					test_ball_collide(balls[i],balls[j]);
+			}
+		} */	
+		//collide bar
+		if(ball.y >= bar_L.y && ball.y <= bar_L.height+bar_L.y && ball.x-ball.r <= bar_L.x+bar_L.width && ball.x >= bar_L.x && !check_over_collide(ball,bar_L)){
+			wall_collide(ball,"x",timeDiff);
+			ball.last_collide=bar_L;
+			bar_effect(ball,bar_L);
+			ball.se=-1;
+			AI_target(balls,"R");
+			//console.log("hit bar L");
+		}else if(ball.y >= bar_R.y && ball.y <= bar_R.height+bar_R.y && ball.x+ball.r >= bar_R.x && ball.x <= bar_R.x+bar_R.width&& !check_over_collide(ball,bar_R)){
+			wall_collide(ball,"x",timeDiff);
+			bar_effect(ball,bar_R);
+			ball.se=-1;
+			ball.last_collide=bar_R;
+			AI_target(balls,"R");
+			//console.log("hit bar R");	
+		}
+        //collide prop
+		if(document.getElementById("prop").checked){
+			icon.forEach(function(elements,index){
+				if(ball.x+ball.r>elements.x&&ball.x-ball.r<elements.x+elements.size&&ball.y+ball.r>elements.y&&ball.y-ball.r<elements.y+elements.size && elements.YN==0){
+					is_display(elements);
+					prop_ram(index,elements);
+					switch (index){
+						case 0: 
+							ball.se = getRandomInt(0, 2);
+							document.getElementById("prop_hit").innerHTML ="random!";
+							break;
+						case 1:
+							ball.se = 0;
+							/*ball.vx *= 2;
+							ball.vy *= 2;
+							window.setTimeout(function(){
+								ball.vx/=2;
+								ball.vy/=2;
+								console.log("slow");	},3000)*/
+							document.getElementById("prop_hit").innerHTML ="fire!";
+							break;
+						case 2:
+							ball.se = 1;
+							document.getElementById("prop_hit").innerHTML ="ice!";
+							break;
+						case 3:
+							balls.forEach(function(elements){
+								elements.vx/=5;
+								elements.vy/=5;	
+							});
+							
+							window.setTimeout(function(){balls.forEach(function(elements){
+								elements.vx*=5;
+								elements.vy*=5;	
+							});},5000);
+							ice_boom_hit=true;
+							ice_alpha = 1;
+							document.getElementById("prop_hit").innerHTML ="ice boom!";
+							break;
+						case 4 :
+							balls.push(new C_ball(ball.x,ball.y,-ball.vx,-ball.vy));
+							document.getElementById("prop_hit").innerHTML ="Double!";
+							break;
+						case 5 :
+							ball.se=2
+							document.getElementById("prop_hit").innerHTML ="lightning!";
+							break;
+						case 6 ://money up
+							let ran=getRandomArbitrary(1, 2);
+							L_s *= 1.3;
+							document.getElementById("hit").innerHTML ="Stock good (ﾉ>ω<)ﾉ <br> Money ×"+ran.toFixed(2);
+							break;
+						case 7://+1s
+							R_s += 0.1;
+							document.getElementById("hit").innerHTML ="+1s!";
+							break;
+						case 8: //cash!
+							let temp = getRandomInt(4000, 40000);
+							L_s += temp;
+							document.getElementById("hit").innerHTML ="Get cash:"+temp;
+							break;
+						case 9:
+							let ran2=getRandomArbitrary(0.7, 1);
+							L_s *= ran2;
+							document.getElementById("hit").innerHTML ="Stock bad! ╮(╯_╰)╭ <br> Money ×"+ran2.toFixed(2);
+							break;
+					}
+					var old = document.getElementById("hit");
+					window.setTimeout(function(){
+						if(old === document.getElementById("hit"))
+							document.getElementById("hit").innerHTML =" ";
+					},3000)
+
+				}	
+			
+			})
+		}
+    }
+		/* 上方switch 判断球击中哪一种 道具， 再通过道具判断赋予特效 */
+		
+		//
+		//animate
+		//
+		var context = canvas.getContext('2d');
+		function animate(canvas,lastTime,ball) {
+		
+		
+        // update
+        let date = new Date();
+        let time = date.getTime();
+        var timeDiff = time - lastTime;
+		ball.forEach(function(elements){
+			if(elements.life>0)
+			updatePos(timeDiff,elements);
+		});
+
+		fireworks.forEach(function(elements){
+					updatePos(timeDiff,elements);
+					firework(elements);
+				});
+		
+		//detect bar's move
+		if(AI_move_R_enable)
+			AI_move(bar_R,hit_point_R[0]);
+		if(AI_move_L_enable)
+			AI_move(bar_L,hit_point_L[0]);
+		move_bar(bar_L);
+		move_bar(bar_R);
+		
+		
+		
+		//test
+		//var img = document.getElementById("test_img").onload;
+		//window.onload = function() {	
+		//};
+        lastTime = time;
+
+        // clear
+        context.clearRect(0, 0, canvas.width, canvas.height);
+
+        // render balls
+		ball.forEach(function(elements){
+		  if(elements.life<=0)
+			return;
+		  context.beginPath();
+          context.arc(elements.x, elements.y,elements.r, 0, 2 * Math.PI, false);
+          context.fillStyle = elements.color;
+          context.fill();
+		  if(elements.se != -1)
+		  se_Particle(elements);// special effect
+		});
+
+		//draw	bars
+		context.beginPath();
+        context.rect(bar_L.x,bar_L.y,bar_L.width,bar_L.height);
+		context.fillStyle = bar_L.color;
+        context.fill();
+		
+		context.beginPath();
+        context.rect(bar_R.x,bar_R.y,bar_R.width,bar_R.height);
+		context.fillStyle = bar_R.color;
+        context.fill();
+		
+		if(document.getElementById("prop").checked)
+			prop();
+		
+		fireworks.forEach(function(elements){
+			context.beginPath();
+          	context.arc(elements.x, elements.y,elements.r, 0, 2 * Math.PI, false);
+          	context.fillStyle = elements.color;
+          	context.fill();
+		});
+        if(finish){
+        	context.beginPath();
+	        context.font="150px Georgia";
+			context.fillText("You Win!",25,250);
+		}
+		if(ice_boom_hit){
+			ice_alpha *= 0.9;
+	        context.globalAlpha = ice_alpha;
+			context.fillStyle = "powerblue"; 
+			context.fillRect(0, 0, canvas.width, canvas.height); 
+			context.globalAlpha = 1;
+			if(ice_alpha<0.1)
+				ice_boom_hit=false;
+		}
+		// request new frame
+       requestAnimFrame(function() {
+          animate(canvas, time, ball);
+          AI_target(balls,"R")
+        });
+      }
+		
+		
+		// request imagine of icon
+		function C_icon(){
+			this.x=0;
+			this.y=0;
+			this.img={};
+			this.size=50;
+			this.YN=getRandomInt(0, 6);
+			//this.effect_type=et;//{}
+			
+		}
+
+
+		var icon =[];
+		for(let i=0;i<10;i++){
+			icon[i]=new C_icon();
+			icon[i].img=new Image();
+			icon[i].img.crossOrigin = "Anonymous";
+			
+		}
+		
+		icon[0].img.src ='http://i4.eiimg.com/602236/747d1f3480670878.png';//unknown
+		icon[1].img.src ='http://i4.eiimg.com/602236/7881f7f65ad88092.png';//fire
+		icon[2].img.src ='http://i4.eiimg.com/602236/671cfd507a2c76f0.png';//ice
+		icon[3].img.src ='http://i1.bvimg.com/602236/41f316912694831e.png';//ice boom
+		icon[4].img.src ='http://i2.bvimg.com/602236/732ab8832b8a0345.png';//double
+		icon[5].img.src ='http://i4.bvimg.com/602236/405204bf51c36798.png';//shock
+		icon[6].img.src ='http://i1.bvimg.com/602236/7ee4238466f6f53f.png';//up up
+		icon[7].img.src ='http://i1.bvimg.com/602236/9a316f16607d914f.png';//+1s
+		icon[8].img.src ='http://i1.bvimg.com/602236/b4d84d5284133d42.png';//$$
+		icon[9].img.src ='http://i1.bvimg.com/602236/3394e58b8371a2af.png';//down down
+
+		icon[6].YN = -1;//up up
+		icon[7].YN = -1;//+1s
+		icon[8].YN = -1;//$$
+		icon[9].YN = -1;//down down
+
+	
+	
+   
+   
+   //creaitng balls
+   function C_ball(x,y,vx,vy,r,color,mass,life){
+		
+		this.x=parseFloat(x)||getRandomArbitrary(1,canvas.width);
+		this.y=parseFloat(y)||getRandomArbitrary(1,canvas.height);
+		this.vx=parseFloat(vx)||getRandomArbitrary(-8,8);
+		this.vy=parseFloat(vy)||getRandomArbitrary(-8,8);
+		this.r=r||10;
+		this.color=color||getRandomColor() 
+		this.mass=mass||getRandomArbitrary(10,100);
+		this.last_collide=null;
+		this.life=life||10;
+		this.se=-1;
+		//console.log(this);
+   }
+   
+   //function change(){
+   //color = document.input.User_color.value;
+   //}
+   
+   //var iball_now=0;
+   
+   function add_ball(){
+	balls.push(new C_ball(document.input.n_ball_x.value,document.input.n_ball_y.value,document.input.n_ball_spx.value,document.input.n_ball_spy.value,10,document.input.User_color.value,document.input.n_ball_mass.value,));
+	AI_target(balls,"R")
+	//iball_now++;
+	//console.log("ball"+iball_now+"created!");
+   }
+   
+   // create bar
+	var bar_R = new C_bar(canvas.width*0.95,canvas.height*0.35,20,canvas.height*0.3,"#66ccff");
+	var bar_L = new C_bar(canvas.width*0.05-20,canvas.height*0.35,20,canvas.height*0.3,"#FF0000");
+	
+   AI_target(balls,"R") 	
+   animate(canvas,time,balls);
+
+   
+   //copy from Stake
+   function getRandomColor() 
+   {var letters = '0123456789ABCDEF';
+   var color = '#';
+   for (var i = 0; i < 6; i++) {
+    color += letters[Math.floor(Math.random() * 16)];
+	}return color;};
+	
+	//copy from MDN
+	function getRandomArbitrary(min1, max2) {
+		var min = Math.min(min1,max2);
+		var max = Math.max(min1,max2);
+		return Math.random() * (max - min) + min;
+	}
+	function getRandomInt(min, max) {
+		min = Math.ceil(min);
+		max = Math.floor(max);
+		return Math.floor(Math.random() * (max - min)) + min; //The maximum is exclusive and the minimum is inclusive
+	}
+	// check balls' collide
+	function test_ball_collide(ball1,ball2){
+		if((ball1.x-ball2.x)**2+(ball1.y-ball2.y)**2<=(ball1.r+ball2.r)**2 && !check_over_collide(ball1,ball2)){
+            var a = (2 * ball2.mass / (ball1.mass + ball2.mass)) * (((ball1.vx - ball2.vx) * (ball1.x - ball2.x) + (ball1.vy - ball2.vy) * (ball1.y - ball2.y)) / ((ball1.x - ball2.x)**2 + (ball1.y - ball2.y)**2))
+            var newBall1vx = ball1.vx - a * (ball1.x - ball2.x)
+            var newBall1vy = ball1.vy - a * (ball1.y - ball2.y)
+			var b = (2 * ball1.mass / (ball1.mass + ball2.mass)) * (((ball1.vx - ball2.vx) * (ball1.x - ball2.x) + (ball1.vy - ball2.vy) * (ball1.y - ball2.y)) / ((ball1.x - ball2.x)**2 + (ball1.y - ball2.y)**2))
+           
+            var newBall2vx = ball2.vx - b * (ball2.x - ball1.x)
+            var newBall2vy = ball2.vy - b * (ball2.y - ball1.y)
+
+            ball1.vx = newBall1vx;
+            ball1.vy = newBall1vy;
+
+            ball2.vx = newBall2vx;
+            ball2.vy = newBall2vy;
+			
+			ball1.last_collide=ball2;
+			ball2.last_collide=ball1;
+			AI_target(balls,"R");	
+			
+			//console.log("collide detected");
+			
+		}//formulation from Kai
+	
+	}
+	function check_over_collide(ball1,ball2){
+		if(ball1.last_collide===ball2){
+			//console.log("over collide!");
+			return true;
+			}
+		else
+			return false;
+	}
+	
+	// bar thing
+	function C_bar(x,y,width,height,color,sp){
+		this.x=x;
+		this.y=y;
+		this.width=width;
+		this.height=height;
+		this.color=color;
+		this.up=false;
+		this.down=false;
+		this.sp=sp||7;
+	}
+	
+//from stake————————detect keyboard
+	document.addEventListener('keydown', function(event) {
+    if(event.keyCode == 38) { //up
+        bar_R.up=true;
+		//console.log("up");
+		event.preventDefault();
+    }
+    else if(event.keyCode == 40) {//down
+        bar_R.down=true;
+		//console.log("down");
+		event.preventDefault();
+    }
+	else if(event.keyCode == 87) { //w
+        bar_L.up=true;
+		//console.log("w");
+    }
+	else if(event.keyCode == 83) { //s
+        bar_L.down=true;
+		//console.log("s");
+    }
+});
+
+	document.addEventListener('keyup', function(event) {
+    if(event.keyCode == 38) { //up
+        bar_R.up=false;
+		event.preventDefault();
+		//console.log("up");
+    }
+    else if(event.keyCode == 40) {//down
+        bar_R.down=false;
+		
+		//console.log("down");
+    }
+	else if(event.keyCode == 87) { //w
+        bar_L.up=false;
+		//console.log("w");
+    }
+	else if(event.keyCode == 83) { //s
+        bar_L.down=false;
+		//console.log("s");
+    }
+	});
+	
+	document.addEventListener('keydown', function(event) {
+		if(event.keyCode == 32) { //space
+        balls.push(new C_ball(canvas.width/2,canvas.height/2,null ,null ,10 ,null) );
+        AI_target(balls,"R");
+		event.preventDefault();
+	}
+	});
+
+// keyboard end
+
+
+	function move_bar(bar){
+		if(bar.up==true&&bar.y>0){
+			bar.y-=bar.sp;
+		}
+		if(bar.down==true&&bar.y+bar.height<canvas.height){
+			bar.y+=bar.sp;
+			
+		}
+	}
+//wall collide
+	function wall_collide(ball,direction,timeDiff){
+		if(direction=="x"){
+			ball.x -= 0.1*ball.vx*timeDiff;
+			ball.vx = -ball.vx;
+			ball.last_collide=null;
+			//console.log("wall x collide");
+		}
+		if (direction=="y"){
+			ball.y -= 0.1*ball.vy*timeDiff;
+			ball.vy = -ball.vy;
+			ball.last_collide=null;
+			//console.log("wall y collide");
+		}
+			
+	}
+	
+	//prop stuff
+	function prop(){
+		icon.forEach(function(elements){
+			if(elements.YN==-1)
+				return;
+			else if(elements.YN==0)
+				context.drawImage(elements.img,elements.x,elements.y,elements.size,elements.size);
+			else
+				elements.YN = getRandomInt(0,121+121*(icon.length-1));
+		})
+	}
+	icon.forEach(function(elements){
+			
+			elements.x=getRandomArbitrary(bar_L.x+bar_L.width, bar_R.x-bar_R.width);
+			elements.y=getRandomArbitrary(0, canvas.height-elements.size);
+		})
+	function call_help(){
+		icon.forEach(function(elements){
+		if(elements.YN != 0)
+			is_display(elements);
+	})
+	setTimeout(call_help,1000);
+	}
+	
+	
+	function prop_ram(index,elements){
+		icon[index].x=getRandomArbitrary(bar_L.x+bar_L.width, bar_R.x-bar_R.width);
+		icon[index].y=getRandomArbitrary(0, canvas.height-elements.size);
+		//setTimeout(prop_ram,5000);
+		
+	}
+	function is_display(elements){
+		elements.YN=getRandomInt(0,6);
+	}
+	
+	//effect
+	var se_color=[];
+	se_color[0]={main:"red",sub:"yellow"};//fire
+	se_color[1]={main:"#00FFFF",sub:"66CCff"};//ice
+	
+	function se_Particle(ball){
+		if(ball.se==0||ball.se==1){
+			let fix=1;
+			if(document.getElementById("effect_low").checked)
+				fix=0.1;
+			let speed = Math.sqrt(ball.vx**2+ball.vy**2);
+			for(let i=0;i<fix*30*speed;i++){
+				let x = getRandomArbitrary(-1*speed, 0)*speed*0.5;
+				let y = getRandomArbitrary(-1*ball.r, ball.r);
+				let x_r=(x*ball.vx-y*ball.vy)/speed+ball.x;
+				let y_r=(x*ball.vy+y*ball.vx)/speed+ball.y;
+				context.beginPath();
+				context.arc(x_r,y_r,1, 0, 2 * Math.PI, false);
+				context.fillStyle =se_color[ball.se].main;
+				context.fill();
+			}
+			for(let i=0;i<fix*30*speed;i++){
+				let x = getRandomArbitrary(-1*speed, 0)*speed*0.5;
+				let y = getRandomArbitrary(-1*ball.r, ball.r);
+				let x_r=(x*ball.vx-y*ball.vy)/speed+ball.x;
+				let y_r=(x*ball.vy+y*ball.vx)/speed+ball.y;
+				context.beginPath();
+				context.arc(x_r,y_r,1, 0, 2 * Math.PI, false);
+				context.fillStyle = se_color[ball.se].sub;
+				context.fill();
+			}
+		}else if(ball.se==2){
+				ball.color='powerblue'
+				shock(ball);
+
+		}
+		
+	}
+	//lightening effect
+	function shock(ball){
+		let x=[];
+				let y=[];
+			for(let i=0;i<16;){
+
+				x[0] = getRandomArbitrary(ball.x-ball.r, ball.x+ball.r+0.0001);
+				y[0] = getRandomArbitrary(ball.y-ball.r, ball.y+ball.r+0.0001);
+
+				if((x[0]-ball.x)**2+(y[0]-ball.y)**2-ball.r**2>-1)
+					continue;
+				/*context.arc(x[0],y[0],1, 0, 2 * Math.PI, false);
+				context.fillStyle ='black';
+				context.fill();*/
+				x[1] = getRandomArbitrary(ball.x-ball.r*2, ball.x+ball.r*2+0.0001);
+				y[1] = getRandomArbitrary(ball.y-ball.r*2, ball.y+ball.r*2+0.0001);
+				if((x[1]-ball.x)**2+(y[1]-ball.y)**2-(ball.r*2)**2>-1)
+					continue;
+				x[2] = getRandomArbitrary(ball.x-ball.r*4, ball.x+ball.r*4+0.0001);
+				y[2] = getRandomArbitrary(ball.y-ball.r*4, ball.y+ball.r*4+0.0001);
+				if((x[2]-ball.x)**2+(y[2]-ball.y)**2-(ball.r*4)**2>-1)
+					continue;
+				i++;
+				for(let j=1;j<4;j++){
+					context.beginPath();
+					context.moveTo(x[j-1],y[j-1]);
+					context.lineTo(x[j],y[j]);
+					context.strokeStyle = '#fff647';
+					context.lineWidth = 3;
+					context.stroke();
+				}
+				
+
+			}
+			
+	}
+
+	function bar_effect(ball,bar){
+		switch (ball.se){
+						case -1: 
+							break;
+						case 0:
+							bar.sp=bar.sp*5;
+							if(bar.sp!=7)
+							setTimeout(function (){bar.sp=bar.sp/5;},5000);
+							console.log("++");
+							break;
+						case 1:
+							bar.sp=bar.sp/5;
+							if(bar.sp!=7)
+							setTimeout(function (){bar.sp=bar.sp*5;},5000);
+							console.log("--");
+							break;
+						case 2:
+							bar.sp=0;
+							setTimeout(function (){bar.sp=7;},3000);
+							break;
+					}
+		
+	}
+	function resume_balls(ele,x){
+		ele /= x;
+	}
+    
+
+    //firework
+	function victor(dir){
+		for(let i=0;i<10;i++){
+			fireworks.push(new C_firework(0,0,getRandomArbitrary(0, 10*dir),-1*getRandomArbitrary(0, 10),10,0))
+		}
+		finish=true;
+		window.setTimeout(function(){location.reload()},10000);
+	}
+	
+	function firework(firework){
+		if(firework.des_time<firework.time){
+			boom(firework);
+			fireworks.splice(fireworks.indexOf(firework),1);
+		}
+		else
+			firework.time++;
+	}
+
+	function C_firework(x,y,vx,vy,r,des_time){
+		this.color=getRandomColor();
+		this.x=x||canvas.width/2;
+		this.y=y||canvas.height;
+		this.vx=vx||(canvas.width/2)/50;
+		this.vy=vy||(canvas.height)/50;
+		this.r=r||10;
+		this.des_time=des_time||getRandomArbitrary(0, 1)*60;
+		this.time=0;
+		this.die=0;
+		//this.sub=[];
+		//this.subYN=0;
+	}
+
+	function boom(firework){
+		if (firework.r<5)
+			return;
+		//fireworks.subYN=1;
+		fireworks.push(new C_firework(firework.x+firework.r*getRandomArbitrary(0, 6),firework.y,Math.abs(firework.vx)*2,getRandomArbitrary(0, 2),firework.r/2,firework.des_time/3));
+		fireworks.push(new C_firework(firework.x-firework.r*getRandomArbitrary(0, 6),firework.y,-Math.abs(firework.vx)*2,getRandomArbitrary(0, 2),firework.r/2,firework.des_time/3));
+		fireworks.push(new C_firework(firework.x,firework.y+firework.r*getRandomArbitrary(0, 6),getRandomArbitrary(0, 2),Math.abs(firework.vy)*2,firework.r/2,firework.des_time/3));
+		fireworks.push(new C_firework(firework.x,firework.y-firework.r*getRandomArbitrary(0, 6),getRandomArbitrary(0, 2),-Math.abs(firework.vy)*2,firework.r/2,firework.des_time/3));
+		
+		fireworks.push(new C_firework(firework.x+firework.r*getRandomArbitrary(0, 6),firework.y-firework.r*getRandomArbitrary(0, 6),Math.abs(firework.vx)*2,Math.abs(firework.vy)*2,firework.r/2,firework.des_time/3));
+		fireworks.push(new C_firework(firework.x-firework.r*getRandomArbitrary(0, 6),firework.y-firework.r*getRandomArbitrary(0, 6),-Math.abs(firework.vx)*2,Math.abs(firework.vy)*2,firework.r/2,firework.des_time/3));
+		fireworks.push(new C_firework(firework.x+firework.r*getRandomArbitrary(0, 6),firework.y+firework.r*getRandomArbitrary(0, 6),Math.abs(firework.vx)*2,-Math.abs(firework.vy)*2,firework.r/2,firework.des_time/3));
+		fireworks.push(new C_firework(firework.x-firework.r*getRandomArbitrary(0, 6),firework.y-firework.r*getRandomArbitrary(0, 6),-Math.abs(firework.vx)*2,-Math.abs(firework.vy)*2,firework.r/2,firework.des_time/3));
+	}
+
+	function AI_target(balls,side){
+
+				if(AI_L_Main==true){
+			hit_point_L[0]={y:300,time:9999,}
+			balls.forEach(function(elements,index){
+			let k=elements.vy/elements.vx;
+			if (elements.vx<0) {
+				var j=0;
+				hit_point_L[j].y= (elements.x-bar_L.x-bar_L.width)*k+elements.y;
+				hit_point_L[j].time=Math.abs((bar_L.x-elements.x)/elements.vx*10);
+				AI_move_L_enable=true;
+				j++;
+			}
+			})
+			hit_point_L.AI_insertion_sort();
+			hit_point_L[0].y %= canvas.height*2;
+			if(hit_point_L[0].y>canvas.height)
+				hit_point_L[0].y = Math.abs(canvas.width*2-hit_point_L[0].y);
+			else if(hit_point_L[0].y<0)
+				hit_point_L[0].y = Math.abs(hit_point_L[0].y);
+			
+			} 
+			
+		if(AI_R_Main==true){
+
+			hit_point_R[0]={y:300,time:9999}
+			balls.forEach(function(elements,index){
+				let k=elements.vy/elements.vx;
+				if (elements.vx>0) {
+					var i=0;
+					hit_point_R[i]={y:300,time:9999}
+				//slope heads downwards
+					hit_point_R[i].y= (bar_R.x-elements.x)*k+elements.y;
+					hit_point_R[i].time=(bar_R.x-elements.x)/elements.vx*10;
+					AI_move_R_enable=true;
+					i++;
+				}
+			})
+			hit_point_R.AI_insertion_sort();
+			hit_point_R[0].y %= canvas.height*2;
+			if(hit_point_R[0].y>canvas.height)
+				hit_point_R[0].y = Math.abs(canvas.width*2-hit_point_R[0].y);
+			else if(hit_point_R[0].y<0)
+				hit_point_R[0].y = Math.abs(hit_point_R[0].y);
+			}
+		
+
+		
+			/*if(hit_point[index].y==300 && hit_point[index].time==0){
+			 hit_point.splice(index,1);
+			 if(index==0)
+			 AI_R_enable=false;
+			}*/
+		
+	}
+
+	function AI_move(bar,hit_point){
+		//if(!hit_point) return;
+		if(hit_point.y>bar.y+bar.height/2){
+					bar.down=true;
+					bar.up=false;
+					//console.log("up");
+				}
+		else if(hit_point.y<bar.y+bar.height/2){
+					bar.down=false;
+					bar.up=true;
+					//console.log("down");
+				}
+		else if(hit_point.y>bar.y && hit_point.y<bar.y+bar.height/2){
+					bar.down=false;
+					bar.up=false;
+					//console.log("stop");
+				}
+		
+	}
+	//sorting From Wiki
+	/*
+	AI ONLY!
+	*/
+    </script>
+  </body>
+</html>
+      
